@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Alerts Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Sensor Alerts</h1>
+        <p>Live updates for Motion and GPS sensors</p>
+    </header>
+    <main>
+        <div id="alerts-container">
+            {% for alert in alerts %}
+            <div class="alert-card {{ alert[3] }}">
+                <h3>{{ alert[3].capitalize() }} Alert</h3>
+                <p><strong>Date:</strong> {{ alert[1] }}</p>
+                <p><strong>Time:</strong> {{ alert[2] }}</p>
+                <p><strong>Details:</strong> {{ alert[4] }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        <br>
+        <br>
+    </main>
+    <footer>
+        <p>Made with ❤️ in UPM</p>
+    </footer>
+
+    <script>
+        // Real-time updates using Socket.IO
+        var socket = io.connect("http://" + document.domain + ":1337");
+
+        socket.on("new_alert", function (data) {
+            let container = document.getElementById("alerts-container");
+
+            // Create a new card for the alert
+            let card = document.createElement("div");
+            card.className = `alert-card ${data.sensor} latest-alert`;
+            card.innerHTML = `
+                <h3>${data.sensor.charAt(0).toUpperCase() + data.sensor.slice(1)} Alert</h3>
+                <p><strong>Date:</strong> ${data.date}</p>
+                <p><strong>Time:</strong> ${data.time}</p>
+                <p><strong>Details:</strong> ${data.level}</p>
+            `;
+
+            // Add the new card to the top
+            container.prepend(card);
+
+            // Remove highlight from previous latest alert
+            setTimeout(() => {
+                card.classList.remove("latest-alert");
+            }, 4000); // Remove highlight after 4 seconds
+        });
+    </script>
+</body>
+
+</html>
